@@ -18,9 +18,6 @@ class EnvironmentVariables {
   NODE_ENV: Environment;
 
   @IsString()
-  ALLOWED_ORIGINS: string;
-
-  @IsString()
   DATABASE_NAME: string;
 
   @IsString()
