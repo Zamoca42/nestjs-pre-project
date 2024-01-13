@@ -1,5 +1,5 @@
 import { ConfigModuleOptions } from '@nestjs/config';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { IsEnum, IsString, validateSync } from 'class-validator';
 
 export const envConfigOptions: ConfigModuleOptions = {
@@ -39,20 +39,11 @@ class EnvironmentVariables {
   DATABASE_PORT: string;
 
   @IsString()
-  SET_COOKIE_SECRET: string;
-
-  @IsString()
   TZ: string;
-
-  @IsString()
-  SENTRY_DSN: string;
-
-  @IsString()
-  RATE_LIMITER: string;
 }
 
 function validate(config: Record<string, unknown>): EnvironmentVariables {
-  const validatedConfig = plainToClass(EnvironmentVariables, config, {
+  const validatedConfig = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   });
   const errors = validateSync(validatedConfig, {
