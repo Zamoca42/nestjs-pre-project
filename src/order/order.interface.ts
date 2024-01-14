@@ -14,3 +14,10 @@ export interface FindOrderPropsWhere
   status: OrderStatus;
   isDate: boolean;
 }
+
+export interface RawMonthlyOrder {
+  date: Date;
+  order: number;
+  refund: number;
+  amount: number;
+}

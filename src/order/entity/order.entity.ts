@@ -28,7 +28,7 @@ export class Order {
 
   static create(data: unknown) {
     const order = new Order();
-    order.customerId = Customer.byId(data['주문고객 id']);
+    order.customerId = data['주문고객 id'];
     order.createdAt = new Date(data['주문일자']);
     order.amount = data['주문금액'];
     order.status = data['주문타입'];

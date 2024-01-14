@@ -2,6 +2,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Order } from '../entity/order.entity';
 import { Customer } from '../../customer/entity/customer.entity';
+import { Money } from './get-money.dto';
 
 export class GetOrderList {
   @Exclude() private readonly _id: number;
@@ -41,9 +42,6 @@ export class GetOrderList {
   @ApiProperty({ description: '주문 금액' })
   @Expose()
   get amount(): string {
-    return Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW',
-    }).format(this._amount);
+    return Money.currencyFormat(this._amount);
   }
 }

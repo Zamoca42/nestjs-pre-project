@@ -11,7 +11,7 @@ import {
   Repository,
 } from 'typeorm';
 import { PaginationOptions } from 'src/common/common.interface';
-import { FindOrderPropsWhere } from './order.interface';
+import { FindOrderPropsWhere, RawMonthlyOrder } from './order.interface';
 
 @Injectable()
 export class OrderService {
@@ -36,6 +36,20 @@ export class OrderService {
       take,
       ...options,
     });
+  }
+
+  async findMonthlySales(): Promise<RawMonthlyOrder[]> {
+    return this.orderRepo
+      .createQueryBuilder('o')
+      .select(
+        `date_trunc('month', o.createdAt)::date as date,
+      sum(CASE WHEN o.status = 'order' THEN o.amount ELSE 0 END) as order,
+      sum(CASE WHEN o.status = 'refund' THEN o.amount ELSE 0 END) as refund,
+      sum(CASE WHEN o.status = 'order' THEN o.amount ELSE -o.amount END) as amount`,
+      )
+      .groupBy('date')
+      .orderBy('date', 'ASC')
+      .getRawMany();
   }
 
   private findOrderManyOptions(
