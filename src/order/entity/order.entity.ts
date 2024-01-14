@@ -1,19 +1,37 @@
 import { Customer } from '../../customer/entity/customer.entity';
-import { PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { OrderStatus } from '../../common/constant/entity.enum';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  Entity,
+  JoinColumn,
+} from 'typeorm';
 
+@Entity()
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
   @ManyToOne(() => Customer, (customer: Customer) => customer.orders)
+  @JoinColumn({ name: 'customer_id' })
   customerId: Customer;
 
-  @Column({ type: 'varchar', length: 8 })
-  status: string;
+  @Column({ type: 'enum', enum: OrderStatus })
+  status: OrderStatus;
 
-  @Column({ name: 'created_at', type: 'timestamp with time zone' })
+  @Column({ name: 'created_at', type: 'date' })
   createdAt: Date;
 
   @Column({ type: 'integer' })
   amount: number;
+
+  static create(data: unknown) {
+    const order = new Order();
+    order.customerId = Customer.byId(data['주문고객 id']);
+    order.createdAt = new Date(data['주문일자']);
+    order.amount = data['주문금액'];
+    order.status = data['주문타입'];
+    return order;
+  }
 }
