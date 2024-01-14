@@ -1,6 +1,7 @@
 import { Order } from '../../order/entity/order.entity';
-import { PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, OneToMany, Entity } from 'typeorm';
 
+@Entity()
 export class Customer {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,6 +18,14 @@ export class Customer {
   static byId(id: number): Customer {
     const customer = new Customer();
     customer.id = id;
+    return customer;
+  }
+
+  static create(data: unknown) {
+    const customer = new Customer();
+    customer.id = data['고객 id'];
+    customer.name = data['고객명'];
+    customer.grade = data['고객등급'];
     return customer;
   }
 }
