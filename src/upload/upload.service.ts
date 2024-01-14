@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { utils, read } from 'xlsx';
-import { Customer } from './customer/entity/customer.entity';
-import { Order } from './order/entity/order.entity';
-import { CustomerService } from './customer/customer.service';
-import { OrderService } from './order/order.service';
-import { Entity } from './common/constant/entity.enum';
+import { Customer } from '../customer/entity/customer.entity';
+import { Order } from '../order/entity/order.entity';
+import { CustomerService } from '../customer/customer.service';
+import { OrderService } from '../order/order.service';
+import { Entity } from '../common/constant/entity.enum';
 
 @Injectable()
-export class AppService {
+export class UploadService {
   constructor(
     private readonly orderService: OrderService,
     private readonly customerService: CustomerService,
   ) {}
 
-  saveCsvData(file: Express.Multer.File): number {
+  saveCsvDataToEntity(file: Express.Multer.File): number {
     const workbook = read(file.buffer.toString('utf-8'), {
       type: 'string',
       cellNF: true,

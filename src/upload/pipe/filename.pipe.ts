@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, PipeTransform } from '@nestjs/common';
-import { AppService } from 'src/app.service';
+import { UploadService } from 'src/upload/upload.service';
+import { Entity } from '../../common/constant/entity.enum';
 
 /**
  * Validator supports service container in the case if want to inject dependencies into your custom validator constraint classes
@@ -11,13 +12,15 @@ import { AppService } from 'src/app.service';
 export class FilenamePipe
   implements PipeTransform<Express.Multer.File, Promise<Express.Multer.File>>
 {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: UploadService) {}
 
   async transform(value: Express.Multer.File): Promise<Express.Multer.File> {
     const filename = this.appService.parseFilename(value);
 
     if (!filename) {
-      throw new NotFoundException('"customer" or "order" not found');
+      throw new NotFoundException(
+        `'${Entity.CUSTOMER}' or '${Entity.ORDER}' not found`,
+      );
     }
 
     return value;

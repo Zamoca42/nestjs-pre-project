@@ -54,7 +54,6 @@ export class AppController {
     model: GetOrderList,
     isPagination: true,
   })
-  //TODO: startDate, endDate validation pipe
   async findManyOrderByQueryParam(@Query() params: OrderQueryParam) {
     const [response, count] =
       await this.orderService.findOrderByOptionsAndCount(
@@ -76,7 +75,6 @@ export class AppController {
     name: '월별 매출 통계 조회',
     model: GetOrderStatistics,
   })
-  //TODO: startDate, endDate validation pipe
   async findMonthlySales(): Promise<ResponseEntity<GetOrderStatistics[]>> {
     const response = await this.orderService.findMonthlySales();
     return ResponseEntity.OK_WITH(
