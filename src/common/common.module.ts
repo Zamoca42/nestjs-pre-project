@@ -9,7 +9,6 @@ import {
 import { envConfigOptions } from './config/env.config';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './filter/http-exception.filter';
-import { EntityNotFoundExceptionFilter } from './filter/typeorm-exception.filter';
 
 @Module({
   imports: [
@@ -27,10 +26,6 @@ import { EntityNotFoundExceptionFilter } from './filter/typeorm-exception.filter
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: EntityNotFoundExceptionFilter,
     },
   ],
   exports: [ConfigModule, WinstonModule],

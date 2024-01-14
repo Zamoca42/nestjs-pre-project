@@ -42,20 +42,12 @@ export class ResponseEntity<T> {
     this.data = data;
   }
 
-  static OK(message: string): ResponseEntity<string> {
-    return new ResponseEntity(HttpStatus.OK, message, true, '');
-  }
-
   static OK_WITH<T>(message: string, data: T): ResponseEntity<T> {
     return new ResponseEntity(HttpStatus.OK, message, true, data);
   }
 
   static CREATED(message: string): ResponseEntity<string> {
     return new ResponseEntity(HttpStatus.CREATED, message, true, '');
-  }
-
-  static CREATED_WITH<T>(message: string, data: T): ResponseEntity<T> {
-    return new ResponseEntity(HttpStatus.CREATED, message, true, data);
   }
 
   static EXCEPTION(message: string, code: HttpStatus): ResponseEntity<string> {

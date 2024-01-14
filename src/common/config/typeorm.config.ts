@@ -11,6 +11,4 @@ export const typeOrmConfig: PostgresConnectionOptions = {
   synchronize: process.env.NODE_ENV === 'dev',
   logging: process.env.NODE_ENV !== 'production',
   entities: [join(__dirname, '../../**/*.entity{.ts,.js}')],
-  ssl:
-    process.env.NODE_ENV === 'dev' ? undefined : { rejectUnauthorized: false },
 };

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { PaginationProps } from './get-pagination-query.dto';
+import { PaginationOptions } from '../common.interface';
 
 export class PageEntity<T> {
   @Exclude() private readonly _take: number;
@@ -8,9 +8,9 @@ export class PageEntity<T> {
   @Exclude() private readonly _results: T[];
   @Exclude() private readonly _page: number;
 
-  constructor(pageProps: PaginationProps, count: number, results: T[]) {
-    this._page = pageProps.page;
-    this._take = pageProps.take;
+  constructor(options: PaginationOptions, results: T[], count: number) {
+    this._page = options.page;
+    this._take = options.take;
     this._count = count;
     this._results = results;
   }
@@ -19,16 +19,24 @@ export class PageEntity<T> {
     description: '페이지당 항목 수가 적용된 결과 데이터',
   })
   @Expose()
-  get results(): T[] {
+  get items(): T[] {
     return this._results;
   }
 
   @ApiProperty({
-    description: '현재 페이지',
+    description: '페이지네이션: 조회할 페이지 번호',
   })
   @Expose()
-  get page(): number {
+  get pageNo(): number {
     return this._page;
+  }
+
+  @ApiProperty({
+    description: '페이지네이션: 한 페이지 조회 건 수',
+  })
+  @Expose()
+  get pageSize(): number {
+    return this._take;
   }
 
   @ApiProperty({
@@ -40,26 +48,18 @@ export class PageEntity<T> {
   }
 
   @ApiProperty({
-    description: '쿼리 결과 항목 수 (전체)',
+    description: '항목 수 (현재 페이지 기준)',
   })
   @Expose()
-  get queryCount(): number {
-    return this._count;
-  }
-
-  @ApiProperty({
-    description: '현재 페이지의 항목 수',
-  })
-  @Expose()
-  get resultsLength(): number {
-    return this._results.length;
+  get itemCount(): number {
+    return this.items.length;
   }
 
   static create<T>(
-    pageProps: PaginationProps,
-    count: number,
+    options: PaginationOptions,
     response: T[],
+    count: number,
   ): PageEntity<T> {
-    return new PageEntity<T>(pageProps, count, response);
+    return new PageEntity<T>(options, response, count);
   }
 }
