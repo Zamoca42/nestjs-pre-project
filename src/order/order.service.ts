@@ -38,7 +38,7 @@ export class OrderService {
     });
   }
 
-  async findMonthlySales(): Promise<RawMonthlyOrder[]> {
+  findMonthlySales(): Promise<RawMonthlyOrder[]> {
     return this.orderRepo
       .createQueryBuilder('o')
       .select(

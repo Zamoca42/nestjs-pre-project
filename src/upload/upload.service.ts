@@ -13,22 +13,12 @@ export class UploadService {
     private readonly customerService: CustomerService,
   ) {}
 
-  saveCsvDataToEntity(file: Express.Multer.File): number {
-    const workbook = read(file.buffer.toString('utf-8'), {
-      type: 'string',
-      cellNF: true,
-    });
-    const jsonData = utils.sheet_to_json(
-      workbook.Sheets[workbook.SheetNames[0]],
-    );
+  saveDataToEntity(data: unknown[], filename: string): number {
+    filename === Entity.CUSTOMER
+      ? this.customerService.saveMany(data.map((data) => Customer.create(data)))
+      : this.orderService.saveMany(data.map((data) => Order.create(data)));
 
-    this.parseFilename(file) === Entity.CUSTOMER
-      ? this.customerService.saveMany(
-          jsonData.map((data) => Customer.create(data)),
-        )
-      : this.orderService.saveMany(jsonData.map((data) => Order.create(data)));
-
-    return jsonData.length;
+    return data.length;
   }
 
   parseFilename(file: Express.Multer.File): string {
@@ -41,5 +31,14 @@ export class UploadService {
     if (filename.includes('order')) {
       return Entity.ORDER;
     }
+  }
+
+  csvToJson(file: Express.Multer.File): unknown[] {
+    const workbook = read(file.buffer.toString('utf-8'), {
+      type: 'string',
+      cellNF: true,
+    });
+
+    return utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
   }
 }

@@ -21,7 +21,7 @@ import { FileAPI } from './upload/swagger/file-api.decorator';
 import { GetOrderStatistics } from './order/dto/get-order-statistics.dto';
 import { RawMonthlyOrder } from './order/order.interface';
 
-@ApiTags('App')
+@ApiTags('API')
 @Controller()
 export class AppController {
   constructor(
@@ -41,8 +41,9 @@ export class AppController {
     )
     file: Express.Multer.File,
   ) {
-    const saveCount = this.appService.saveCsvDataToEntity(file);
+    const fileData = this.appService.csvToJson(file);
     const filename = this.appService.parseFilename(file);
+    const saveCount = this.appService.saveDataToEntity(fileData, filename);
     return ResponseEntity.CREATED(
       `Successfully saved ${saveCount} ${filename}`,
     );
