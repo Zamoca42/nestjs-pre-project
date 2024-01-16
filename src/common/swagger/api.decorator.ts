@@ -51,7 +51,7 @@ export const SwaggerAPI = ({
               ? {
                   $ref: getSchemaPath(PageEntity),
                   properties: {
-                    results: {
+                    items: {
                       type: 'array',
                       items: { $ref: getSchemaPath(model) },
                     },
