@@ -32,7 +32,7 @@ export class AppController {
   @Post('upload-csv')
   @SwaggerAPI({ name: 'CSV 파일 업로드', success: 201 })
   @FileAPI()
-  handleCSVFile(
+  async handleCSVFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [new FileTypeValidator({ fileType: 'csv' })],
@@ -43,7 +43,10 @@ export class AppController {
   ) {
     const fileData = this.appService.csvToJson(file);
     const filename = this.appService.parseFilename(file.originalname);
-    const saveCount = this.appService.saveDataToEntity(fileData, filename);
+    const saveCount = await this.appService.saveDataToEntity(
+      fileData,
+      filename,
+    );
     return ResponseEntity.CREATED(
       `Successfully saved ${saveCount} ${filename}`,
     );

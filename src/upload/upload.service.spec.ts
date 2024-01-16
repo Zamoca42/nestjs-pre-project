@@ -41,7 +41,7 @@ describe('UploadService', () => {
   });
 
   describe('saveDataToEntity', () => {
-    it('should save data to entity', () => {
+    it('should save data to entity', async () => {
       const data: OrderJson[] = [
         {
           '주문고객 id': 1,
@@ -54,7 +54,7 @@ describe('UploadService', () => {
 
       jest.spyOn(orderService, 'saveMany').mockResolvedValueOnce([]);
 
-      const result = uploadService.saveDataToEntity(data, filename);
+      const result = await uploadService.saveDataToEntity(data, filename);
 
       expect(result).toEqual(1);
       expect(orderService.saveMany).toHaveBeenCalledWith([
@@ -62,7 +62,7 @@ describe('UploadService', () => {
       ]);
     });
 
-    it('should save data to entity', () => {
+    it('should save data to entity', async () => {
       const data: CustomerJson[] = [
         {
           '고객 id': 1,
@@ -74,7 +74,7 @@ describe('UploadService', () => {
 
       jest.spyOn(customerService, 'saveMany').mockResolvedValueOnce([]);
 
-      const result = uploadService.saveDataToEntity(data, filename);
+      const result = await uploadService.saveDataToEntity(data, filename);
 
       expect(result).toEqual(1);
       expect(customerService.saveMany).toHaveBeenCalledWith([

@@ -1,3 +1,4 @@
+import { CustomerJson } from '../../upload/upload.interface';
 import { Order } from '../../order/entity/order.entity';
 import { PrimaryGeneratedColumn, Column, OneToMany, Entity } from 'typeorm';
 
@@ -21,7 +22,7 @@ export class Customer {
     return customer;
   }
 
-  static create(data: unknown) {
+  static create(data: CustomerJson) {
     const customer = new Customer();
     customer.id = data['고객 id'];
     customer.name = data['고객명'];

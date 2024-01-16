@@ -14,15 +14,15 @@ export class UploadService {
     private readonly customerService: CustomerService,
   ) {}
 
-  saveDataToEntity(
+  async saveDataToEntity(
     data: (OrderJson | CustomerJson)[],
     filename: string,
-  ): number {
+  ): Promise<number> {
     filename === Entity.CUSTOMER
-      ? this.customerService.saveMany(
+      ? await this.customerService.saveMany(
           data.map((data: CustomerJson) => Customer.create(data)),
         )
-      : this.orderService.saveMany(
+      : await this.orderService.saveMany(
           data.map((data: OrderJson) => Order.create(data)),
         );
 

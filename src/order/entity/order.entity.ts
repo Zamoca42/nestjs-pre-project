@@ -7,6 +7,7 @@ import {
   Entity,
   JoinColumn,
 } from 'typeorm';
+import { OrderJson } from '../../upload/upload.interface';
 
 @Entity()
 export class Order {
@@ -26,9 +27,9 @@ export class Order {
   @Column({ type: 'integer' })
   amount: number;
 
-  static create(data: unknown) {
+  static create(data: OrderJson) {
     const order = new Order();
-    order.customerId = data['주문고객 id'];
+    order.customerId = Customer.byId(data['주문고객 id']);
     order.createdAt = new Date(data['주문일자']);
     order.amount = data['주문금액'];
     order.status = data['주문타입'];
