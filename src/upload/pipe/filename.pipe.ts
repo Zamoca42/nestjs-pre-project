@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, PipeTransform } from '@nestjs/common';
-import { UploadService } from 'src/upload/upload.service';
+import { UploadService } from '../../upload/upload.service';
 import { Entity } from '../../common/constant/entity.enum';
 
 /**
@@ -15,7 +15,8 @@ export class FilenamePipe
   constructor(private readonly appService: UploadService) {}
 
   async transform(value: Express.Multer.File): Promise<Express.Multer.File> {
-    const filename = this.appService.parseFilename(value);
+    const fileOriginalname = value.originalname;
+    const filename = this.appService.parseFilename(fileOriginalname);
 
     if (!filename) {
       throw new NotFoundException(

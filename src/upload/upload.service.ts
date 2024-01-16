@@ -5,6 +5,7 @@ import { Order } from '../order/entity/order.entity';
 import { CustomerService } from '../customer/customer.service';
 import { OrderService } from '../order/order.service';
 import { Entity } from '../common/constant/entity.enum';
+import { CustomerJson, OrderJson } from './upload.interface';
 
 @Injectable()
 export class UploadService {
@@ -13,27 +14,32 @@ export class UploadService {
     private readonly customerService: CustomerService,
   ) {}
 
-  saveDataToEntity(data: unknown[], filename: string): number {
+  saveDataToEntity(
+    data: (OrderJson | CustomerJson)[],
+    filename: string,
+  ): number {
     filename === Entity.CUSTOMER
-      ? this.customerService.saveMany(data.map((data) => Customer.create(data)))
-      : this.orderService.saveMany(data.map((data) => Order.create(data)));
+      ? this.customerService.saveMany(
+          data.map((data: CustomerJson) => Customer.create(data)),
+        )
+      : this.orderService.saveMany(
+          data.map((data: OrderJson) => Order.create(data)),
+        );
 
     return data.length;
   }
 
-  parseFilename(file: Express.Multer.File): string {
-    const filename = file.originalname;
-
-    if (filename.includes('customer')) {
+  parseFilename(fileOriginalname: string): string {
+    if (fileOriginalname.includes('customer')) {
       return Entity.CUSTOMER;
     }
 
-    if (filename.includes('order')) {
+    if (fileOriginalname.includes('order')) {
       return Entity.ORDER;
     }
   }
 
-  csvToJson(file: Express.Multer.File): unknown[] {
+  csvToJson(file: Express.Multer.File): (OrderJson | CustomerJson)[] {
     const workbook = read(file.buffer.toString('utf-8'), {
       type: 'string',
       cellNF: true,
