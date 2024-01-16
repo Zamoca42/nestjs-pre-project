@@ -4,166 +4,123 @@
 
 - [2024년 (주)두번째 사전 과제](#2024년-주두번째-사전-과제)
   - [목차 :clipboard:](#목차-clipboard)
-  - [개요](#개요)
-  - [사용 기술](#사용-기술)
-  - [프로젝트 진행 및 이슈 관리](#프로젝트-진행-및-이슈-관리)
+  - [기술 스택](#기술-스택)
   - [ERD](#erd)
-  - [아키텍처](#아키텍처)
+  - [DDL](#ddl)
   - [구현 과정 및 설명](#구현-과정-및-설명)
-  - [Did You Know](#did-you-know)
-  - [API Endpoint](#api-endpoint)
-  - [테스트 케이스](#테스트-케이스)
-    - [이벤트](#이벤트)
-    - [포토부스](#포토부스)
-    - [리뷰](#리뷰)
-    - [해시태그](#해시태그)
-  - [API Reference](#api-reference)
+  - [API 문서](#api-문서)
 
-## 개요
-
-덤핀 어플리케이션은 사용자 주변의 다양한 포토부스를 소개하고 프레임 및 진행 중인 이벤트 정보를 제공하는 플랫폼입니다.
-사용자들은 덤핀 어플을 통해 지역 내 포토부스의 다양한 특징과 프레임을 확인할 수 있으며, 현재 진행 중인 이벤트에 참여할 수 있습니다.
-
-덤핀 어드민은 어플리케이션의 관리 백오피스로서, 포토부스 정보의 업데이트, 이벤트 관리, 사용자 데이터 분석 등을 수행합니다.
-어드민을 통해 쉽게 어플리케이션의 콘텐츠를 관리하고 최신 정보를 반영할 수 있습니다.
-
-이를 통해 사용자들은 항상 다양하고 흥미로운 포토부스 경험을 즐길 수 있으며,
-어플리케이션은 지속적인 업데이트와 새로운 이벤트를 통해 사용자들을 유지하고 확장할 수 있습니다.
-
-## 사용 기술
+## 기술 스택
 
 ![NestJS][NestJS] ![TypeScript][TypeScript] ![TypeORM][TypeORM]
-![PostgreSQL][PostgreSQL] ![Swagger][Swagger]
-![GitHubActions][GitHubActions] ![EC2][AWS-EC2] ![Route53][AWS-Route53]
-
-## 프로젝트 진행 및 이슈 관리
-
-[![GitHub][GitHub]](https://github.com/orgs/develop-pix/projects/1/views/1)
-
-![Project-Calander](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/d7620bae-fcaf-4d2b-87b4-29bb48013649)
-![Project-Kanban](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/1f345570-1ec3-4fc5-b77a-a03a9a730997)
+![PostgreSQL][PostgreSQL]  
+![Swagger][Swagger]
+![GitHubActions][GitHubActions]
+![DockerCompose][DockerCompose]
 
 ## ERD
 
-![modeling](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/7f7d0eda-468e-44f8-819a-5df3006280c8)
+![사전과제-erd](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/d29c745f-cc31-4166-8836-940d49308106)
 
-## 아키텍처
+## DDL
 
-![app-architecture](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/302d5157-1e8c-4eb6-a50a-ef106c7fe897)
+```sql
+create type public.order_status_enum as enum ('order', 'refund');
+
+create table
+  "customer" (
+    id integer primary key generated always as identity,
+    name varchar(32),
+    grade varchar(4)
+  );
+
+create table
+  "order" (
+    id integer primary key generated always as identity,
+    customer_id integer,
+    status order_status_enum,
+    created_at date,
+    amount integer
+  );
+
+alter table "order"
+add constraint fk_customer_id foreign key (customer_id) references customer (id);
+```
 
 ## 구현 과정 및 설명
 
-- **세션 인증 및 인가**
+- **고객정보 및 주문내역정보 업로드 API `api/upload-csv`**
 
-  - express-session을 이용해서 서버 메모리가 아닌 postgresql로 세션 스토어 사용
-  - 쿠키 세션 적용
-  - Guard로 인가 기능 적용
-  - Rate Limiting으로 무작위 대입 방지
+  - xlsx 또는 csv 파일 업로드 관련 라이브러리로 [xlsx](https://www.npmjs.com/package/xlsx)를 사용했습니다
 
-- **대시보드 기능**
+    - 라이브러리에는 exceljs와 xlsx 중 비교적 unpack 사이즈가 작은 xlsx를 선택했습니다.
+    - xlsx라이브러리의 최신 버전은 npm으로 관리하고 있지 않아서 다음 명령어로 설치했습니다.
 
-  - 날짜별 가입자수, 리뷰수 보기 적용
-  - TypeORM 쿼리빌더에서 groupBy를 이용
+      - <https://docs.sheetjs.com/docs/getting-started/installation/nodejs/>
 
-    ```typescript
-      countUsersByDate(): Promise<RawCountByDate[]> {
-      return this.createQueryBuilder('user')
-        .select(['DATE(created_at) as created', 'COUNT(id) as user'])
-        .where('deleted_at IS NULL')
-        .groupBy('created')
-        .orderBy('created', 'DESC')
-        .getRawMany();
+      ```bash
+      npm i --save https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz
+      ```
+
+  - csv -> json으로 변환해서 엔티티로 전달하는 로직을 작성했습니다. (csvToJson, saveDataToEntity)
+  - csv 파일이름 내에서 order, customer를 포함하도록 파이프를 추가했습니다.
+  - csv가 정상적으로 전달되면 전달된 엔티티의 행의 수와 엔티티 이름을 반환하도록 작성했습니다.
+
+- **월별 매출 통계 API `api/sales/monthly`**
+
+  - findMonthlySales 메서드를 사용하여 월별 매출 통계를 조회합니다.
+  - 주문일자를 date로 월별로 정리하고 주문금액을 주문타입에 따라 주문, 환불, 매출총액을 나눠서 반환하게 쿼리빌더를 만들었습니다.
+
+    ```sql
+      date_trunc('month', o.createdAt)::date as date,
+      sum(CASE WHEN o.status = 'order' THEN o.amount ELSE 0 END) as order,
+      sum(CASE WHEN o.status = 'refund' THEN o.amount ELSE 0 END) as refund,
+      sum(CASE WHEN o.status = 'order' THEN o.amount ELSE -o.amount END) as amount`,
+    ```
+
+  - GetOrderStatistics 클래스를 사용하여 조회된 데이터를 직렬화합니다.
+
+    ```json
+    {
+      "date": "YYYY년 M월", //(예) - 2024년 1월
+      "order": "주문 총액(원)",
+      "refund": "환불 총액(원)",
+      "amount": "매출 총액(원)"
     }
     ```
 
-  - 통합 대시보드 보기
-    - 날짜별 가입자수, 리뷰수 쿼리 결과를 [대시보드 서비스 로직][dashboard]에서 통합
+- **주문 목록 조회 API `api/order`**
 
-- **포토부스 관리 기능**
+  - PaginationDto, OrderQueryParam에서 쿼리파라미터를 받아서 전달합니다.
+    - 페이지네이션
+      - PageNo `number`: 조회할 페이지 번호 (기본: 1)
+      - pageSize `number`: 한 페이지 조회 건 수 (기본: 50)
+    - 주문시 조회
+      - startDate `string`: 기간 조회 시 시작일 (예시: 2024-01-01)
+      - endDate `string`: 기간 조회 시 종료일 (예시: 2024-01-01)
+      - orderType `number`: 주문 또는 반품만을 조회 (0: 주문, 1: 반품)
+      - customerId `number`: 특정 고객의 주문만 조회 시 (고객 id)
+  - 주문시 조회에 쿼리 파라미터를 넣지 않으면 전체 엔티티를 반환하도록 작성했습니다.
+  - PageEntity.create 메서드를 사용하여 페이징된 응답(현재 페이지, 페이지에 가져온 항목수)을 생성합니다.
 
-  - 포토부스 업체를 생성, 수정할 수 있는 기능 적용
-  - 어플리케이션 내의 지도에 표시 지역별 포토부스 지점관리 기능 적용
+- **단위 테스트 작성**
 
-- **이벤트 관리 기능**
+  - 주문, 고객, 파일 변환, 통계에 관한 단위 테스트 작성
 
-  - 어플리케이션에서 포토부스 업체별 시행하고있는 이벤트나 한정 기간동안 프레임을 볼 수 있는 이벤트 생성 기능
-  - 이벤트를 수정하면서 관련 이미지, 해시태그를 테이블로 정규화해서 관리
+## API 문서
 
-- **리뷰 관리 기능**
-
-  - 유저가 작성한 리뷰를 확인하고 부적절한 내용은 삭제할 수 있게 조회 및 삭제기능 적용
-
-- **유저 관리 기능**
-
-  - 가입한 유저의 정보를 확인 (수정 불가)
-
-- **로그 모니터링**
-
-  - Sentry, Winston을 이용해 로그 레벨에 따라 알림
-    - info 레벨: 이미 예외처리를 작성한 내용은 Winston으로 파일로 만들어서 관리
-    - error 레벨: 내부 서버 에러나 예상치 못한 에러는 Sentry로 보내 이메일로 알림
-  - Sentry의 Cron 모니터링과 NestJS 스케쥴링으로 주기적으로 서버 상태 모니터링
-
-## Did You Know
-
-:pushpin: [API 요청 시도 횟수 제한하기](https://zamoca.space/js-ts/nest-js/rate-limit.html)
-
-:pushpin: [트랜잭션 롤백 해결하기](https://zamoca.space/db/transaction-rollback.html)
-
-:pushpin: [sh: 1: nest: not found 해결](https://zamoca.space/js-ts/nest-js/error-cli-not-found.html)
-
-:pushpin: [응답 객체 직렬화하기](https://zamoca.space/js-ts/nest-js/class-transformer.html)
-
-:pushpin: [요청 객체 역직렬화하기](https://zamoca.space/js-ts/nest-js/class-validator.html)
-
-:pushpin: [서버 상태 모니터링하기](https://zamoca.space/js-ts/nest-js/server-monitoring.html)
-
-:pushpin: [외부 로거로 효율적으로 모니터링하기](https://zamoca.space/js-ts/nest-js/external-logger.html)
-
-## API Endpoint
-
-![API-endpoint-notion](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/961eacf8-4dee-4779-b748-7631e3687e48)
-
-## 테스트 케이스
-
-### 이벤트
-
-![test-event](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/f61692a4-cfde-431e-b8e5-b39cde17d00b)
-
-### 포토부스
-
-![test-photobooth](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/b6f74c5e-8406-4207-b621-ec8c1125e522)
-
-### 리뷰
-
-![test-review](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/0b152ed3-1226-4d12-ab41-11eef0792c32)
-
-### 해시태그
-
-![test-hashtag](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/42a59297-dc87-4baa-89eb-646ff894886c)
-
-## API Reference
-
-<https://admin.dump-in.co.kr/api/swagger>
-
-<details>
-
-<summary>Swagger 이미지</summary>
-
-![1](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/beecf55a-de66-4722-b237-17f46f78bc27)
-![2](https://github.com/develop-pix/dump-in-Admin-BE/assets/96982072/13fd5bec-4412-4d05-adb9-9c90dad679a9)
-
-</details>
+![1](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/762a1651-6c53-415a-9ba7-febc351d2100)
+![2](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/ec25d675-ceff-4a67-b9fd-690c61c5a957)
+![3](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/4344f4dd-755e-4845-aaea-1c275657547b)
+![4](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/dc893cef-0c5d-4e7d-b00c-8bffef37bfa0)
+![5](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/62f77b5b-6070-42a2-ad32-e071928db867)
 
 <br/>
 
-[NestJS]: https://img.shields.io/badge/nestjs-%23E0234E.svg?style=for-the-badge&logo=nestjs&logoColor=white
-[TypeScript]: https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white
-[TypeORM]: https://img.shields.io/badge/TypeORM-%2334567c.svg?style=for-the-badge&logo=adminer&logoColor=white
-[PostgreSQL]: https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white
+[NestJS]: https://img.shields.io/badge/nestjs%2010.-%23E0234E.svg?style=for-the-badge&logo=nestjs&logoColor=white
+[TypeScript]: https://img.shields.io/badge/typescript%205.-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white
+[TypeORM]: https://img.shields.io/badge/TypeORM%200.3-%2334567c.svg?style=for-the-badge&logo=adminer&logoColor=white
+[PostgreSQL]: https://img.shields.io/badge/postgres%2014.0-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white
 [Swagger]: https://img.shields.io/badge/swagger-%23Clojure.svg?style=for-the-badge&logo=swagger&logoColor=white
 [GitHubActions]: https://img.shields.io/badge/GitHub%20Actions-%232088ff.svg?style=for-the-badge&logo=githubactions&logoColor=white
-[GitHub]: https://img.shields.io/badge/GitHub%20Project-%23181717.svg?style=for-the-badge&logo=github&logoColor=white
-[AWS-EC2]: https://img.shields.io/badge/AWS%20EC2-%23FF9900.svg?style=for-the-badge&logo=amazonec2&logoColor=white
-[AWS-Route53]: https://img.shields.io/badge/AWS%20Route53-%238C4FFF.svg?style=for-the-badge&logo=amazonroute53&logoColor=white
-[dashboard]: https://github.com/develop-pix/dump-in-Admin-BE/blob/main/src/dashboard/dashboard.service.ts
+[DockerCompose]: https://img.shields.io/badge/Docker%20Compose-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white
