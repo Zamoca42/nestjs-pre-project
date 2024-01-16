@@ -1,8 +1,7 @@
-import { HttpStatus, Type, applyDecorators } from '@nestjs/common';
+import { HttpStatus, applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiExtraModels,
-  ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   getSchemaPath,
@@ -10,34 +9,20 @@ import {
 import { PageEntity } from '../dto/get-pagination-list.dto';
 import { ResponseEntity } from '../entity/response.entity';
 import { createSchema } from './api.schema';
+import { SwaggerApiOptionsProps } from '../common.interface';
 
 export const SwaggerAPI = ({
   name,
   success = HttpStatus.OK,
-  fail = HttpStatus.NOT_FOUND,
   model = Object,
   isPagination = false,
-}: OptionsProps): MethodDecorator => {
+}: SwaggerApiOptionsProps): MethodDecorator => {
   return applyDecorators(
     ApiOperation({
       summary: `${name} API`,
     }),
 
     ApiExtraModels(PageEntity, ResponseEntity, model),
-
-    ApiNotFoundResponse({
-      description:
-        '데이터가 없을 때 응답입니다. 404 상태코드와 메시지가 반환됩니다',
-      schema: {
-        allOf: [
-          createSchema({
-            status: fail,
-            message: `${name}을(를) 찾지 못했습니다. input: {props}`,
-            success: false,
-          }),
-        ],
-      },
-    }),
 
     ApiBadRequestResponse({
       description:
@@ -46,7 +31,7 @@ export const SwaggerAPI = ({
         allOf: [
           createSchema({
             status: HttpStatus.BAD_REQUEST,
-            message: '잘못된 요청에 대한 메세지.',
+            message: '[ 잘못된 요청에 대한 메세지들 ]',
             success: false,
           }),
         ],
@@ -66,7 +51,7 @@ export const SwaggerAPI = ({
               ? {
                   $ref: getSchemaPath(PageEntity),
                   properties: {
-                    results: {
+                    items: {
                       type: 'array',
                       items: { $ref: getSchemaPath(model) },
                     },
@@ -81,11 +66,3 @@ export const SwaggerAPI = ({
     }),
   );
 };
-
-interface OptionsProps {
-  name: string;
-  success?: number;
-  fail?: number;
-  isPagination?: boolean;
-  model?: Type<unknown>;
-}

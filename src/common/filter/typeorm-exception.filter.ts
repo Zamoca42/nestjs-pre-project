@@ -5,7 +5,7 @@ import {
   Logger,
   HttpStatus,
 } from '@nestjs/common';
-// import { EntityNotFoundError } from 'typeorm';
+import { QueryFailedError } from 'typeorm';
 import { Request, Response } from 'express';
 import { createLog } from '../config/log-helper.config';
 import { ResponseEntity } from '../entity/response.entity';
@@ -15,8 +15,8 @@ import { ResponseEntity } from '../entity/response.entity';
  * @see also @https://gist.github.com/gsusmonzon/ecd7842495f07594761e40c2758617d0
  * @see also @https://docs.nestjs.com/exception-filters
  */
-@Catch()
-export class EntityNotFoundExceptionFilter implements ExceptionFilter {
+@Catch(QueryFailedError)
+export class TypeOrmExceptionFilter implements ExceptionFilter {
   constructor(private readonly logger: Logger) {}
 
   /**
@@ -35,12 +35,12 @@ export class EntityNotFoundExceptionFilter implements ExceptionFilter {
       .trim();
   }
 
-  public catch(exception: Error, host: ArgumentsHost) {
+  public catch(exception: QueryFailedError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
     const req = ctx.getRequest<Request>();
     const stack = exception.stack;
-    const statusCode = HttpStatus.NOT_FOUND;
+    const statusCode = HttpStatus.BAD_REQUEST;
     const cleanedUpMessage = this.cleanUpMessage(exception.message);
     const response = ResponseEntity.EXCEPTION(cleanedUpMessage, statusCode);
     const log = createLog({ req, stack, response });

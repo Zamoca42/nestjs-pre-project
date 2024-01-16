@@ -15,6 +15,7 @@ async function bootstrap(): Promise<void> {
   SwaggerModule.setup('/api/swagger', app, document);
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe(pipeOptions));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   useContainer(app.select(AppModule), { fallbackOnErrors: true });

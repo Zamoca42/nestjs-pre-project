@@ -1,16 +1,11 @@
-interface ResponseProps {
-  status: number;
-  message: string;
-  success: boolean;
-  data?: Record<string, unknown>;
-}
+import { SwaggerResponseProps } from '../common.interface';
 
 export const createSchema = ({
   status,
   message,
   success,
   data,
-}: ResponseProps) => ({
+}: SwaggerResponseProps) => ({
   properties: {
     code: { enum: [status] },
     message: {
