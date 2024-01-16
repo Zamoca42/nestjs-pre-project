@@ -29,7 +29,7 @@ export class AppController {
     private readonly orderService: OrderService,
   ) {}
 
-  @Post('upload')
+  @Post('upload-csv')
   @SwaggerAPI({ name: 'CSV 파일 업로드', success: 201 })
   @FileAPI()
   handleCSVFile(
@@ -42,7 +42,7 @@ export class AppController {
     file: Express.Multer.File,
   ) {
     const fileData = this.appService.csvToJson(file);
-    const filename = this.appService.parseFilename(file);
+    const filename = this.appService.parseFilename(file.originalname);
     const saveCount = this.appService.saveDataToEntity(fileData, filename);
     return ResponseEntity.CREATED(
       `Successfully saved ${saveCount} ${filename}`,
