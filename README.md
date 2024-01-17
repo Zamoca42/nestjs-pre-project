@@ -5,6 +5,7 @@
 - [2024년 (주)두번째 사전 과제](#2024년-주두번째-사전-과제)
   - [목차 :clipboard:](#목차-clipboard)
   - [기술 스택](#기술-스택)
+  - [프로젝트 진행 및 이슈 관리](#프로젝트-진행-및-이슈-관리)
   - [ERD](#erd)
   - [DDL](#ddl)
   - [구현 과정 및 설명](#구현-과정-및-설명)
@@ -17,6 +18,12 @@
 ![Swagger][Swagger]
 ![GitHubActions][GitHubActions]
 ![DockerCompose][DockerCompose]
+
+## 프로젝트 진행 및 이슈 관리
+
+[![GitHub][GitHub]](https://github.com/users/Zamoca42/projects/5)
+
+![Image](https://github.com/Zamoca42/nestjs-pre-project/assets/96982072/79abfac3-3c02-4046-a0c3-a2bbe8101db2)
 
 ## ERD
 
@@ -124,3 +131,4 @@ add constraint fk_customer_id foreign key (customer_id) references customer (id)
 [Swagger]: https://img.shields.io/badge/swagger-%23Clojure.svg?style=for-the-badge&logo=swagger&logoColor=white
 [GitHubActions]: https://img.shields.io/badge/GitHub%20Actions-%232088ff.svg?style=for-the-badge&logo=githubactions&logoColor=white
 [DockerCompose]: https://img.shields.io/badge/Docker%20Compose-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white
+[GitHub]: https://img.shields.io/badge/GitHub%20Project-%23181717.svg?style=for-the-badge&logo=github&logoColor=white
